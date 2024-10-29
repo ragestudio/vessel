@@ -1,0 +1,22 @@
+# Trash
+/**/**/.crash.log
+/**/**/.tmp
+/**/**/.evite
+/**/**/.cache
+/**/**/out
+/**/**/.out
+/**/**/dist
+/**/**/node_modules
+/**/**/corenode_modules
+/**/**/.DS_Store
+/**/**/package-lock.json
+/**/**/yarn.lock
+
+# Logs
+/**/**/npm-debug.log*
+/**/**/yarn-error.log
+/**/**/dumps.log
+/**/**/corenode.log
+
+# Temporal configurations
+/**/**/.aliaser
