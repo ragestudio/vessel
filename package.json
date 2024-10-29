@@ -1,16 +1,15 @@
 {
-  "name": "vessel",
+  "name": "@ragestudio/vessel",
   "version": "0.18.0",
   "main": "./src/index.js",
   "repository": "https://github.com/ragestudio/vessel.git",
-  "author": "SrGooglo <srgooglo@ragestudio.net>",
+  "author": "RageStudio",
   "license": "MIT",
   "files": [
     "src"
   ],
-  "scripts": {
-    "link": "yarn link && yarn link 'evite'",
-    "example:react": "cd example && yarn start"
+  "publishConfig": {
+    "access": "public"
   },
   "peerDependencies": {
     "react": "^18.2.0",
