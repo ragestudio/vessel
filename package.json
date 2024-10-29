@@ -1,6 +1,6 @@
 {
   "name": "@ragestudio/vessel",
-  "version": "0.18.0",
+  "version": "0.18.1",
   "main": "./src/index.js",
   "repository": "https://github.com/ragestudio/vessel.git",
   "author": "RageStudio",
@@ -13,8 +13,7 @@
   },
   "peerDependencies": {
     "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "vite": "^4.2.1"
+    "react-dom": "^18.2.0"
   },
   "dependencies": {
     "@loadable/component": "^5.16.4",
