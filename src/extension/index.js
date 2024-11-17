@@ -1,34 +1,22 @@
-import { Observable } from "object-observer"
+import InternalConsole from "../classes/InternalConsole"
+import EventBus from "../classes/EventBus"
 
 export default class Extension {
-    constructor(appContext, mainContext) {
-        this.appContext = appContext
-        this.mainContext = mainContext
-
-        this.promises = []
-
-        return this
+    constructor(params = {}) {
+        this.params = params
     }
 
-    __initializer() {
-        return new Promise(async (resolve, reject) => {
-            if (Array.isArray(this.depends)) {
-                this.depends.forEach((dependency) => {
-                    const dependencyPromise = new Promise((resolve, reject) => {
-                        Observable.observe(this.mainContext.ATTACHED_EXTENSIONS, (changes) => {
-                            changes.forEach((change) => {
-                                Array.from(change.object).includes(dependency) && resolve()
-                            })
-                        })
-                    })
+    eventBus = new EventBus({
+        id: this.constructor.namespace ?? this.constructor.name,
+    })
 
-                    this.promises.push(dependencyPromise)
-                })
-            }
+    console = new InternalConsole({
+        namespace: this.constructor.namespace ?? this.constructor.name,
+    })
 
-            await Promise.all(this.promises)
-
-            return resolve()
-        })
+    async _init() {
+        if (typeof this.onInitialize === "function") {
+            this.onInitialize()
+        }
     }
 }

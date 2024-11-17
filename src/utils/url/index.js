@@ -12,10 +12,30 @@ export function withSuffix(string, suffix) {
     return string.endsWith(suffix) ? string : string + suffix
 }
 
+export function isUrl(string) {
+    return string.startsWith("http://") || string.startsWith("https://")
+}
+
 export function withoutSuffix(string, suffix) {
     return string.endsWith(suffix)
         ? string.slice(0, -1 * suffix.length)
         : string + suffix
+}
+
+export function URLResolve(url, ...paths) {
+    const urlObj = new URL(url)
+
+    paths.forEach((path) => {
+        if (typeof path !== "string") {
+            return path
+        }
+
+        path = path.replace(/^\//, '')
+
+        urlObj.pathname = urlObj.pathname.replace(/\/$/, '') + '/' + path
+    })
+
+    return urlObj.toString()
 }
 
 export function createUrl(urlLike) {

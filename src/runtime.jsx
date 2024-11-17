@@ -11,6 +11,7 @@ import Extension from "./extension"
 
 import EventBus from "./classes/EventBus"
 import InternalConsole from "./classes/InternalConsole"
+import ExtensionManager from "./classes/ExtensionsManager"
 
 import isMobile from "./utils/isMobile"
 
@@ -81,14 +82,7 @@ export default class EviteRuntime {
             }
         })
 
-        window.app.extensions = new Proxy(this.ExtensionsPublicContext, {
-            get: (target, key) => {
-                return target[key]
-            },
-            set: (target, key, value) => {
-                throw new Error("You can't set a extension value")
-            }
-        })
+        window.app.extensions = new ExtensionManager()
 
         this.registerPublicMethod({ key: "isMobile", locked: true }, isMobile())
         this.registerPublicMethod({ key: "__version", locked: true }, pkgJson.version)
