@@ -5,46 +5,46 @@ import * as Comlink from "comlink"
 import ExtensionWorker from "../../workers/extension.js?worker"
 
 export default class ExtensionManager {
-    logger = new InternalConsole({
-        namespace: "ExtensionsManager",
-        bgColor: "bgMagenta",
-    })
+	logger = new InternalConsole({
+		namespace: "ExtensionsManager",
+		bgColor: "bgMagenta",
+	})
 
-    extensions = new Map()
+	extensions = new Map()
 
-    loadExtension = async (manifest) => {
-        if (isUrl(manifest)) {
-            manifest = await fetch(manifest)
-            manifest = await manifest.json()
-        }
+	loadExtension = async (manifest) => {
+		throw new Error("Not implemented")
 
-        const worker = new ExtensionWorker()
+		if (isUrl(manifest)) {
+			manifest = await fetch(manifest)
+			manifest = await manifest.json()
+		}
 
-        worker.postMessage({
-            event: "load",
-            manifest: manifest,
-        })
+		const worker = new ExtensionWorker()
 
-        await new Promise((resolve) => {
-            worker.onmessage = ({data}) => {
-                if (data.event === "loaded") {
-                    resolve()
-                }
-            }
-        })
+		worker.postMessage({
+			event: "load",
+			manifest: manifest,
+		})
 
-        console.log(Comlink.wrap(worker))
+		await new Promise((resolve) => {
+			worker.onmessage = ({ data }) => {
+				if (data.event === "loaded") {
+					resolve()
+				}
+			}
+		})
 
-        // if (typeof main.events === "object") {
-        //     Object.entries(main.events).forEach(([event, handler]) => {
-        //         main.event.on(event, handler)
-        //     })
-        // }
+		console.log(Comlink.wrap(worker))
 
-        // this.extensions.set(manifest.registryId,main.public)
-    }
+		// if (typeof main.events === "object") {
+		//     Object.entries(main.events).forEach(([event, handler]) => {
+		//         main.event.on(event, handler)
+		//     })
+		// }
 
-    installExtension = async () => {
+		// this.extensions.set(manifest.registryId,main.public)
+	}
 
-    }
+	installExtension = async () => {}
 }
