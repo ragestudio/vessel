@@ -97,7 +97,7 @@ export default class CoresManager {
 		return true
 	}
 
-	getCoreContext = () => {
+	getContext = () => {
 		return new Proxy(this.context, {
 			get: (target, key) => target[key],
 			set: () => {

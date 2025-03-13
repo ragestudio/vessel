@@ -1,10 +1,13 @@
 import InternalConsole from "../InternalConsole"
 import { isUrl } from "../../utils/url"
-import * as Comlink from "comlink"
-
-import ExtensionWorker from "../../workers/extension.js?worker"
+import replaceRelativeImportWithUrl from "../../utils/replaceRelativeImportWithUrl"
+import ExtensionsDB from "./db"
 
 export default class ExtensionManager {
+	constructor(runtime) {
+		this.runtime = runtime
+	}
+
 	logger = new InternalConsole({
 		namespace: "ExtensionsManager",
 		bgColor: "bgMagenta",
@@ -12,39 +15,124 @@ export default class ExtensionManager {
 
 	extensions = new Map()
 
-	loadExtension = async (manifest) => {
-		throw new Error("Not implemented")
+	db = new ExtensionsDB()
 
-		if (isUrl(manifest)) {
-			manifest = await fetch(manifest)
+	context = Object()
+
+	load = async (id) => {
+		let manifest = await this.db.manifest.get(id)
+
+		if (!manifest) {
+			throw new Error(`Extension ${id} not found`)
+		}
+
+		this.runtime.eventBus.emit("extension:loading", manifest)
+		this.logger.log(`Loading extension`, manifest)
+
+		if (!manifest.main) {
+			throw new Error("Extension manifest is missing main file")
+		}
+
+		// load main file
+		let mainClass = await import(
+			/* @vite-ignore */
+			manifest.main
+		)
+
+		// inject dependencies
+		mainClass = mainClass.default
+
+		// initializate
+		let main = new mainClass(this.runtime, this, manifest)
+
+		await main._init()
+
+		// set extension in map
+		this.extensions.set(manifest.id, {
+			manifest: manifest,
+			main: main,
+			worker: null,
+		})
+
+		this.runtime.eventBus.emit("extension:loaded", manifest)
+		this.logger.log(`Extension loaded`, manifest)
+	}
+
+	unload = async (id) => {
+		let extension = this.extensions.get(id)
+
+		if (!extension) {
+			throw new Error(`Extension ${id} not found`)
+		}
+
+		await extension.main._unload()
+
+		this.extensions.delete(id)
+
+		this.runtime.eventBus.emit("extension:unloaded", extension.manifest)
+		this.logger.log(`Extension unloaded`, extension.manifest)
+	}
+
+	install = async (manifestUrl) => {
+		let manifest = null
+
+		if (isUrl(manifestUrl)) {
+			manifest = await fetch(manifestUrl)
 			manifest = await manifest.json()
 		}
 
-		const worker = new ExtensionWorker()
+		this.runtime.eventBus.emit("extension:installing", manifest)
+		this.logger.log(`Installing extension`, manifest)
 
-		worker.postMessage({
-			event: "load",
-			manifest: manifest,
-		})
+		if (!manifest.main) {
+			throw new Error("Extension manifest is missing main file")
+		}
 
-		await new Promise((resolve) => {
-			worker.onmessage = ({ data }) => {
-				if (data.event === "loaded") {
-					resolve()
-				}
-			}
-		})
+		manifest.id = manifest.name.replace("/", "-").replace("@", "")
+		manifest.url = manifestUrl
+		manifest.main = replaceRelativeImportWithUrl(manifest.main, manifestUrl)
 
-		console.log(Comlink.wrap(worker))
+		this.db.manifest.put(manifest)
+		this.load(manifest.id)
 
-		// if (typeof main.events === "object") {
-		//     Object.entries(main.events).forEach(([event, handler]) => {
-		//         main.event.on(event, handler)
-		//     })
-		// }
-
-		// this.extensions.set(manifest.registryId,main.public)
+		this.runtime.eventBus.emit("extension:installed", manifest)
+		this.logger.log(`Extension installed`, manifest)
 	}
 
-	installExtension = async () => {}
+	uninstall = async (id) => {
+		let extension = this.extensions.get(id)
+
+		if (!extension) {
+			throw new Error(`Extension ${id} not found`)
+		}
+
+		this.runtime.eventBus.emit("extension:uninstalling", extension.manifest)
+		this.logger.log(`Uninstalling extension`, extension.manifest)
+
+		await this.unload(extension.manifest.id)
+		await this.db.manifest.delete(extension.manifest.id)
+
+		this.runtime.eventBus.emit("extension:uninstalled", extension.manifest)
+		this.logger.log(`Extension uninstalled`, extension.manifest)
+	}
+
+	registerContext(id, value) {
+		return (this.context[id] = value)
+	}
+
+	unregisterContext(id) {
+		delete this.context[id]
+	}
+
+	async initialize() {
+		await this.db.initialize()
+
+		// load all extensions
+		// TODO: load this to late app initializer to avoid waiting for extensions to load the app
+		let extensions = await this.db.manifest.getAll()
+
+		for (let extension of extensions) {
+			await this.load(extension.id)
+		}
+	}
 }

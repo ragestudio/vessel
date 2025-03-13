@@ -1,6 +1,9 @@
 import pkgJson from "../package.json"
 
+import "./patches"
+
 import React from "react"
+window.React = React
 import { createRoot } from "react-dom/client"
 
 import { createBrowserHistory } from "history"
@@ -116,8 +119,13 @@ export default class Runtime {
 		this.registerPublicField("isMobile", isMobile())
 		this.registerPublicField("__version", pkgJson.version)
 
-		window.app.cores = this.cores.getCoreContext()
-		//window.app.extensions = new ExtensionManager()
+		// create fake process
+		window.process = {
+			env: {},
+		}
+
+		window.app.cores = this.cores.getContext()
+		window.app.extensions = this.extensions
 
 		this.registerEventsToBus(this.internalEvents)
 
@@ -165,6 +173,9 @@ export default class Runtime {
 
 		this.eventBus.emit("runtime.initialize.finish")
 		this.render(this.baseAppClass)
+
+		// initialize extension manager
+		this.extensions.initialize()
 
 		if (!this.baseAppClass.splashAwaitEvent) {
 			this.splash.detach()
