@@ -26,35 +26,46 @@ export default class ExtensionManager {
 			throw new Error(`Extension ${id} not found`)
 		}
 
-		this.runtime.eventBus.emit("extension:loading", manifest)
+		app.eventBus.emit("extension:loading", manifest)
 		this.logger.log(`Loading extension`, manifest)
 
 		if (!manifest.main) {
 			throw new Error("Extension manifest is missing main file")
 		}
 
-		// load main file
-		let mainClass = await import(
-			/* @vite-ignore */
-			manifest.main
-		)
+		const startLoadAt = performance.now()
 
-		// inject dependencies
-		mainClass = mainClass.default
+		let main = null
 
-		// initializate
-		let main = new mainClass(this.runtime, this, manifest)
+		if (manifest.enabled == true) {
+			// load main file
+			let mainClass = await import(
+				/* @vite-ignore */
+				manifest.main
+			)
 
-		await main._init()
+			// inject dependencies
+			mainClass = mainClass.default
+
+			// initializate
+			main = new mainClass(this.runtime, this, manifest)
+
+			await main._init()
+		}
+
+		const loadDuration = performance.now() - startLoadAt
 
 		// set extension in map
 		this.extensions.set(manifest.id, {
+			id: manifest.id,
 			manifest: manifest,
 			main: main,
 			worker: null,
+			loadDuration: loadDuration,
+			enabled: manifest.enabled,
 		})
 
-		this.runtime.eventBus.emit("extension:loaded", manifest)
+		app.eventBus.emit("extension:loaded", manifest)
 		this.logger.log(`Extension loaded`, manifest)
 	}
 
@@ -67,9 +78,9 @@ export default class ExtensionManager {
 
 		await extension.main._unload()
 
-		this.extensions.delete(id)
+		//this.extensions.delete(id)
 
-		this.runtime.eventBus.emit("extension:unloaded", extension.manifest)
+		app.eventBus.emit("extension:unloaded", extension.manifest)
 		this.logger.log(`Extension unloaded`, extension.manifest)
 	}
 
@@ -81,7 +92,7 @@ export default class ExtensionManager {
 			manifest = await manifest.json()
 		}
 
-		this.runtime.eventBus.emit("extension:installing", manifest)
+		app.eventBus.emit("extension:installing", manifest)
 		this.logger.log(`Installing extension`, manifest)
 
 		if (!manifest.main) {
@@ -91,11 +102,13 @@ export default class ExtensionManager {
 		manifest.id = manifest.name.replace("/", "-").replace("@", "")
 		manifest.url = manifestUrl
 		manifest.main = replaceRelativeImportWithUrl(manifest.main, manifestUrl)
+		manifest.enabled = true
+		manifest.installed_at = Date.now()
 
 		await this.db.manifest.put(manifest)
 		await this.load(manifest.id)
 
-		this.runtime.eventBus.emit("extension:installed", manifest)
+		app.eventBus.emit("extension:installed", manifest)
 		this.logger.log(`Extension installed`, manifest)
 	}
 
@@ -106,13 +119,14 @@ export default class ExtensionManager {
 			throw new Error(`Extension ${id} not found`)
 		}
 
-		this.runtime.eventBus.emit("extension:uninstalling", extension.manifest)
+		app.eventBus.emit("extension:uninstalling", extension.manifest)
 		this.logger.log(`Uninstalling extension`, extension.manifest)
 
 		await this.unload(extension.manifest.id)
 		await this.db.manifest.delete(extension.manifest.id)
+		this.extensions.delete(id)
 
-		this.runtime.eventBus.emit("extension:uninstalled", extension.manifest)
+		app.eventBus.emit("extension:uninstalled", extension.manifest)
 		this.logger.log(`Extension uninstalled`, extension.manifest)
 	}
 
@@ -122,6 +136,30 @@ export default class ExtensionManager {
 
 	unregisterContext(id) {
 		delete this.context[id]
+	}
+
+	toggleExtension = async (id, to) => {
+		let extension = this.extensions.get(id)
+
+		if (!extension) {
+			throw new Error(`Extension ${id} not found`)
+		}
+
+		if (typeof to !== "boolean") {
+			to = !extension.enabled
+		}
+
+		extension.manifest.enabled = to
+		extension.enabled = to
+
+		await this.db.manifest.put(extension.manifest)
+		this.extensions.set(id, extension)
+
+		if (extension.manifest.enabled) {
+			await this.load(extension.manifest.id)
+		} else {
+			await this.unload(extension.manifest.id)
+		}
 	}
 
 	async initialize() {
