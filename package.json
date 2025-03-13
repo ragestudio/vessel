@@ -1,15 +1,19 @@
 {
 	"name": "@ragestudio/vessel",
-	"version": "0.20.0",
+	"version": "0.21.0",
 	"main": "./src/index.js",
 	"repository": "https://github.com/ragestudio/vessel.git",
 	"author": "RageStudio",
 	"license": "MIT",
 	"files": [
-		"src"
+		"src",
+		"dist"
 	],
 	"publishConfig": {
 		"access": "public"
+	},
+	"scripts": {
+		"build": "vite build"
 	},
 	"dependencies": {
 		"@loadable/component": "^5.16.4",
@@ -17,11 +21,15 @@
 		"comlink": "^4.4.1",
 		"history": "^5.3.0",
 		"less": "^4.2.0",
+		"localforage": "^1.10.0",
 		"million": "^3.1.11",
 		"object-observer": "^6.0.0",
 		"react": "18.3.1",
 		"react-dom": "18.3.1",
 		"react-helmet": "^6.1.0",
 		"sucrase": "^3.35.0"
+	},
+	"devDependencies": {
+		"vite": "^6.2.1"
 	}
 }
