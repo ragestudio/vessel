@@ -92,8 +92,8 @@ export default class ExtensionManager {
 		manifest.url = manifestUrl
 		manifest.main = replaceRelativeImportWithUrl(manifest.main, manifestUrl)
 
-		this.db.manifest.put(manifest)
-		this.load(manifest.id)
+		await this.db.manifest.put(manifest)
+		await this.load(manifest.id)
 
 		this.runtime.eventBus.emit("extension:installed", manifest)
 		this.logger.log(`Extension installed`, manifest)
