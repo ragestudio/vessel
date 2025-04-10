@@ -173,4 +173,10 @@ export default class ExtensionManager {
 			await this.load(extension.id)
 		}
 	}
+
+	isInstalled = async (id) => {
+		const manifest = await this.db.manifest.get(id)
+
+		return !!manifest
+	}
 }
