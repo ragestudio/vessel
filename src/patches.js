@@ -1,9 +1,5 @@
 // Patch global prototypes
-import { Buffer } from "buffer"
-
 globalThis.IS_MOBILE_HOST = window.navigator.userAgent === "capacitor"
-
-window.Buffer = Buffer
 
 Array.prototype.findAndUpdateObject = function (discriminator, obj) {
 	let index = this.findIndex(
