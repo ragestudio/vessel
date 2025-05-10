@@ -63,15 +63,12 @@ export default class Extension {
 					this.manifest.url,
 				)
 
-				this.app.renderComponent = await buildAppRender(
-					this.app.render,
-					{
-						extension: {
-							main: this,
-							manifest: this.manifest,
-						},
+				this.app.renderComponent = buildAppRender(this.app.render, {
+					extension: {
+						main: this,
+						manifest: this.manifest,
 					},
-				)
+				})
 			}
 		}
 	}
