@@ -1,114 +1,53 @@
-class Echo {
-    constructor(params = {}) {
-        this.bgColor = params.bgColor ?? "dimgray"
-        this.color = params.color ?? "azure"
-    }
+class InternalConsole {
+	constructor(params = {}) {
+		this.namespace = String(params.namespace)
+		this.bgColor = params.bgColor ?? "dimgray"
+		this.color = params.textColor ?? "azure"
+		this.tagStyle = `background-color: ${this.bgColor}; color: ${this.color}; font-weight: bold; padding: 3px 7px; border-radius: 8px;`
+		this.timers = new Map()
 
-    queue = []
-    ECHO_TOKEN = {}
-    RESET_INPUT = "%c "
-    RESET_CSS = ""
+		const methods = ["log", "info", "warn", "error", "debug", "trace"]
 
-    tagFormatting(value) {
-        this.queue.push({
-            value: value,
-            css: `
-            display: inline-block; 
-            background-color: ${this.bgColor}; 
-            color: ${this.color}; 
-            font-weight: bold; 
-            padding: 3px 7px; 
-            border-radius: 8px;
-            `
-        })
+		methods.forEach((method) => {
+			const originalMethod = console[method].bind(console)
 
-        return this.ECHO_TOKEN
-    }
+			this[method] = (...args) => {
+				const formatParts = [`%c[${this.namespace}]%c`]
+				const styles = [this.tagStyle, ""]
 
-    using = (consoleFunction) => {
-        function consoleFunctionProxy() {
-            var inputs = []
-            var modifiers = []
+				args.forEach((arg) => {
+					if (typeof arg === "object" || typeof arg === "function") {
+						formatParts.push("%o")
+					} else {
+						formatParts.push("%s")
+					}
+					styles.push(arg)
+				})
 
-            for (var i = 0; i < arguments.length; i++) {
-                if (arguments[i] === this.ECHO_TOKEN) {
-                    var item = this.queue.shift()
+				return originalMethod(formatParts.join(" "), ...styles)
+			}
 
-                    inputs.push(("%c" + item.value), this.RESET_INPUT)
-                    modifiers.push(item.css, this.RESET_CSS)
-                } else {
-                    var arg = arguments[i]
+			Object.setPrototypeOf(
+				this[method],
+				Object.getPrototypeOf(console[method]),
+			)
+		})
+	}
 
-                    if (typeof (arg) === "object" || typeof (arg) === "function") {
-                        inputs.push("%o", this.RESET_INPUT)
-                        modifiers.push(arg, this.RESET_CSS)
-                    } else {
-                        inputs.push(("%c" + arg), this.RESET_INPUT)
-                        modifiers.push(this.RESET_CSS, this.RESET_CSS)
-                    }
-                }
-            }
+	time(label = "default") {
+		this.timers.set(label, performance.now())
+	}
 
-            consoleFunction(inputs.join(""), ...modifiers)
+	timeEnd(label = "default") {
+		const startTime = this.timers.get(label)
 
-            this.queue = []
-        }
+		if (startTime) {
+			const duration = performance.now() - startTime
+			this.timers.delete(label)
 
-        return consoleFunctionProxy.bind(this)
-    }
-
-    out = (method, ...args) => {
-        return this.using(console[method])(...args)
-    }
+			this.debug(`${label}: ${duration}ms`)
+		}
+	}
 }
 
-export default class InternalConsole {
-    constructor(params = {}) {
-        this.namespace = String(params.namespace)
-        this.params = params
-        this.echo = new Echo({
-            bgColor: this.params.bgColor,
-            color: this.params.textColor,
-        })
-    }
-
-    _output(method, ...args) {
-        this.echo.out(
-            method,
-            this.echo.tagFormatting(`[${this.namespace}]`),
-            ...args
-        )
-    }
-
-    log = (...args) => {
-        this._output("log", ...args)
-    }
-
-    warn = (...args) => {
-        this._output("warn", ...args)
-    }
-
-    error = (...args) => {
-        this._output("error", ...args)
-    }
-
-    debug = (...args) => {
-        this._output("debug", ...args)
-    }
-
-    info = (...args) => {
-        this._output("info", ...args)
-    }
-
-    trace = (...args) => {
-        this._output("trace", ...args)
-    }
-
-    time = (...args) => {
-        this._output("time", ...args)
-    }
-
-    timeEnd = (...args) => {
-        this._output("timeEnd", ...args)
-    }
-}
+export default InternalConsole
