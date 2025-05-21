@@ -99,13 +99,13 @@ export default class EventEmitter<
 			return false
 		}
 
-		console.debug(
-			`[eventbus][${this.id}] emitted event (${event.toString()})`,
-			{
-				args: args,
-				listeners,
-			},
-		)
+		// console.debug(
+		// 	`[eventbus][${this.id}] emitted event (${event.toString()})`,
+		// 	{
+		// 		args: args,
+		// 		listeners,
+		// 	},
+		// )
 
 		if (isSingleListener(listeners)) {
 			const { fn, context, once } = listeners
