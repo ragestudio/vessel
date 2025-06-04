@@ -6,7 +6,6 @@ import React from "react"
 window.React = React
 import { createRoot } from "react-dom/client"
 
-import { createBrowserHistory } from "history"
 import { Observable } from "object-observer"
 
 import CoresManager from "./classes/CoresManager"
@@ -44,7 +43,6 @@ export default class Runtime {
 		namespace: "Runtime",
 		bgColor: "bgMagenta",
 	})
-	history = createBrowserHistory()
 	eventBus = new EventBus({
 		id: "runtime",
 	})
@@ -114,7 +112,6 @@ export default class Runtime {
 			document.getElementById(this.params.renderMount ?? "root"),
 		)
 
-		this.registerPublicField("history", this.history)
 		this.registerPublicField("eventBus", this.eventBus)
 		this.registerPublicField("isMobile", isMobile())
 		this.registerPublicField("__version", pkgJson.version)
