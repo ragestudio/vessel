@@ -1,6 +1,6 @@
 {
 	"name": "@ragestudio/vessel",
-	"version": "0.21.2",
+	"version": "0.22.0",
 	"main": "./src/index.js",
 	"repository": "https://github.com/ragestudio/vessel.git",
 	"author": "RageStudio",
@@ -23,9 +23,8 @@
 		"localforage": "^1.10.0",
 		"million": "^3.1.11",
 		"object-observer": "^6.0.0",
-		"react": "18.3.1",
+		"react": "^18.3.1",
 		"react-dom": "18.3.1",
-		"react-helmet": "^6.1.0",
 		"sucrase": "^3.35.0"
 	},
 	"devDependencies": {
