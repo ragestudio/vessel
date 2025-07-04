@@ -28,6 +28,7 @@ export function buildRouter({
 
 				return {
 					loader: mod.default.loader,
+					shouldRevalidate: mod.default.shouldRevalidate,
 					Component: () =>
 						React.createElement(PageWrapper, {
 							path: route.path,
