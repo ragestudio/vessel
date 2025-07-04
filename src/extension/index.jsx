@@ -5,13 +5,13 @@ import loadable from "@loadable/component"
 import replaceRelativeImportWithUrl from "../utils/replaceRelativeImportWithUrl"
 
 function buildAppRender(renderURL, props) {
-	return loadable(async () => {
+	return loadable(async (_props) => {
 		/* @vite-ignore */
 		let RenderModule = await import(/* @vite-ignore */ renderURL)
 
 		RenderModule = RenderModule.default
 
-		return () => <RenderModule {...props} />
+		return () => <RenderModule {..._props} {...props} />
 	})
 }
 
@@ -63,7 +63,7 @@ export default class Extension {
 					this.manifest.url,
 				)
 
-				this.app.renderComponent = buildAppRender(this.app.render, {
+				this.app.render = buildAppRender(this.app.render, {
 					extension: {
 						main: this,
 						manifest: this.manifest,
