@@ -1,35 +1,35 @@
 {
-  "name": "@ragestudio/vessel",
-  "version": "0.23.1",
-  "main": "./src/index.js",
-  "repository": "https://github.com/ragestudio/vessel.git",
-  "author": "RageStudio",
-  "license": "MIT",
-  "files": [
-    "src",
-    "dist"
-  ],
-  "publishConfig": {
-    "access": "public"
-  },
-  "scripts": {
-    "build": "vite build"
-  },
-  "dependencies": {
-    "@loadable/component": "^5.16.4",
-    "@vitejs/plugin-react": "^4.3.4",
-    "comlink": "^4.4.1",
-    "less": "^4.2.0",
-    "localforage": "^1.10.0",
-    "million": "^3.1.11",
-    "object-observer": "^6.0.0",
-    "prop-types": "^15.8.1",
-    "react": "^18.3.1",
-    "react-dom": "18.3.1",
-    "react-router": "^7.6.3",
-    "sucrase": "^3.35.0"
-  },
-  "devDependencies": {
-    "vite": "^6.2.1"
-  }
+	"name": "@ragestudio/vessel",
+	"version": "0.23.2",
+	"main": "./src/index.js",
+	"repository": "https://github.com/ragestudio/vessel.git",
+	"author": "RageStudio",
+	"license": "MIT",
+	"files": [
+		"src",
+		"dist"
+	],
+	"publishConfig": {
+		"access": "public"
+	},
+	"scripts": {
+		"build": "vite build"
+	},
+	"dependencies": {
+		"@loadable/component": "^5.16.4",
+		"@vitejs/plugin-react": "^4.3.4",
+		"comlink": "^4.4.1",
+		"less": "^4.2.0",
+		"localforage": "^1.10.0",
+		"million": "^3.1.11",
+		"object-observer": "^6.0.0",
+		"prop-types": "^15.8.1",
+		"react": "^18.3.1",
+		"react-dom": "18.3.1",
+		"react-router": "^7.6.3",
+		"sucrase": "^3.35.0"
+	},
+	"devDependencies": {
+		"vite": "^6.2.1"
+	}
 }
