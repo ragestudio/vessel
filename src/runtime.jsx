@@ -16,6 +16,7 @@ import SplashScreenManager from "./classes/SplashScreenManager"
 
 import bindObjects from "./utils/bindObjects"
 import isMobile from "./utils/isMobile"
+import isDesktop from "./utils/isDesktop"
 
 import * as StaticRenders from "./internals/renders"
 import "./internals/style/index.css"
@@ -114,6 +115,7 @@ export default class Runtime {
 
 		this.registerPublicField("eventBus", this.eventBus)
 		this.registerPublicField("isMobile", isMobile())
+		this.registerPublicField("isDesktop", isDesktop())
 		this.registerPublicField("__version", pkgJson.version)
 
 		// create fake process
@@ -127,9 +129,7 @@ export default class Runtime {
 		this.registerEventsToBus(this.internalEvents)
 
 		if (typeof this.baseAppClass.events === "object") {
-			for (const [event, handler] of Object.entries(
-				this.baseAppClass.events,
-			)) {
+			for (const [event, handler] of Object.entries(this.baseAppClass.events)) {
 				this.eventBus.on(event, (...args) => handler(this, ...args))
 			}
 		}
@@ -161,9 +161,7 @@ export default class Runtime {
 				this.baseAppClass.publicMethods,
 			)
 
-			for (const [methodName, fn] of Object.entries(
-				boundedPublicMethods,
-			)) {
+			for (const [methodName, fn] of Object.entries(boundedPublicMethods)) {
 				this.registerPublicField({ key: methodName, locked: true }, fn)
 			}
 		}
