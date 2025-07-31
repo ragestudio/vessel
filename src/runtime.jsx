@@ -102,6 +102,7 @@ export default class Runtime {
 
 	async initialize() {
 		this.eventBus.emit("runtime.initialize.start")
+		this.console.time("runtime:initialize")
 
 		this.console.log(
 			`Using React ${React.version} | Runtime v${pkgJson.version}`,
@@ -129,7 +130,9 @@ export default class Runtime {
 		this.registerEventsToBus(this.internalEvents)
 
 		if (typeof this.baseAppClass.events === "object") {
-			for (const [event, handler] of Object.entries(this.baseAppClass.events)) {
+			for (const [event, handler] of Object.entries(
+				this.baseAppClass.events,
+			)) {
 				this.eventBus.on(event, (...args) => handler(this, ...args))
 			}
 		}
@@ -156,12 +159,14 @@ export default class Runtime {
 		}
 
 		if (typeof this.baseAppClass.publicMethods === "object") {
-			const boundedPublicMethods = await bindObjects(
+			const boundedPublicMethods = bindObjects(
 				this,
 				this.baseAppClass.publicMethods,
 			)
 
-			for (const [methodName, fn] of Object.entries(boundedPublicMethods)) {
+			for (const [methodName, fn] of Object.entries(
+				boundedPublicMethods,
+			)) {
 				this.registerPublicField({ key: methodName, locked: true }, fn)
 			}
 		}
@@ -175,6 +180,8 @@ export default class Runtime {
 		if (!this.baseAppClass.splashAwaitEvent) {
 			this.splash.detach()
 		}
+
+		this.console.timeEnd("runtime:initialize")
 	}
 
 	appendToInitializer(task) {
