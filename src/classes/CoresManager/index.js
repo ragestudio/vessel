@@ -10,13 +10,17 @@ export default class CoresManager {
 	context = Object()
 
 	async initialize() {
+		this.runtime.console.time("runtime:initialize:cores")
+
 		try {
+			this.runtime.console.time("runtime:initialize:cores:importpaths")
 			const coresPaths = {
 				...import.meta.glob("/src/cores/*/*.core.jsx"),
 				...import.meta.glob("/src/cores/*/*.core.js"),
 				...import.meta.glob("/src/cores/*/*.core.ts"),
 				...import.meta.glob("/src/cores/*/*.core.tsx"),
 			}
+			this.runtime.console.timeEnd("runtime:initialize:cores:importpaths")
 
 			const coresKeys = Object.keys(coresPaths)
 
@@ -27,6 +31,7 @@ export default class CoresManager {
 				return true
 			}
 
+			this.runtime.console.time("runtime:initialize:cores:import")
 			let cores = await Promise.all(
 				coresKeys.map(async (key) => {
 					const coreModule = await coresPaths[key]().catch((err) => {
@@ -39,8 +44,18 @@ export default class CoresManager {
 					return coreModule?.default ?? coreModule
 				}),
 			)
+			this.runtime.console.timeEnd("runtime:initialize:cores:import")
 
+			this.runtime.console.time("runtime:initialize:cores:filters")
+			// filter by valid cores
 			cores = cores.filter((core) => core && core.constructor)
+
+			// filter by disabled cores
+			cores = cores.filter((core) => {
+				return !core.disabled
+			})
+
+			this.runtime.console.timeEnd("runtime:initialize:cores:filters")
 
 			if (!cores.length) {
 				this.console.warn(`Cannot find any valid cores to initialize.`)
@@ -49,17 +64,23 @@ export default class CoresManager {
 
 			this.runtime.eventBus.emit("runtime.initialize.cores.start")
 
+			this.runtime.console.time("runtime:initialize:cores:sort")
 			cores = sortCoresByDependencies(cores)
+			this.runtime.console.timeEnd("runtime:initialize:cores:sort")
 
+			this.runtime.console.time("runtime:initialize:cores:init")
 			for (const coreClass of cores) {
 				await this.initializeCore(coreClass)
 			}
+			this.runtime.console.timeEnd("runtime:initialize:cores:init")
 
 			this.runtime.eventBus.emit("runtime.initialize.cores.finish")
 		} catch (error) {
 			this.runtime.eventBus.emit("runtime.initialize.cores.failed", error)
 			throw error
 		}
+
+		this.runtime.console.timeEnd("runtime:initialize:cores")
 	}
 
 	async initializeCore(coreClass) {
@@ -77,17 +98,21 @@ export default class CoresManager {
 
 		this.cores.set(namespace, coreInstance)
 
-		const result = await coreInstance._init()
+		const initResult = await coreInstance._init()
 
-		if (!result) {
+		if (!initResult) {
 			this.runtime.console.warn(
 				`[${namespace}] core initialized without a result`,
 			)
 		}
 
-		if (result.public_context) {
-			this.context[result.namespace] = result.public_context
+		if (initResult.public_context) {
+			this.context[initResult.namespace] = initResult.public_context
 		}
+
+		this.runtime.console.debug(
+			`[${namespace}] core initialized in ${coreInstance._initTooks}ms`,
+		)
 
 		this.runtime.eventBus.emit(
 			`runtime.initialize.core.${namespace}.finish`,
