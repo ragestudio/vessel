@@ -1,4 +1,5 @@
-import { createBrowserRouter } from "react-router"
+import { createBrowserRouter, createHashRouter } from "react-router"
+import isDesktop from "../../utils/isDesktop"
 
 import PageWrapper from "../components/PageWrapper"
 import { findRouteDeclaration } from "./routeUtils"
@@ -44,6 +45,10 @@ export function buildRouter({
 	})
 
 	// create & return router
+	if (isDesktop()) {
+		return createHashRouter(routes)
+	}
+
 	return createBrowserRouter(routes)
 }
 

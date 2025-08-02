@@ -9,9 +9,14 @@ export const LocationMethods = {
 		// Clean double slashes
 		to = to.replace(/\/{2,}/g, "/")
 
-		// push to history state and dispatch event
-		window.history.pushState(state, null, to)
-		window.dispatchEvent(new Event("popstate"))
+		if (app.isDesktop === true) {
+			// Use hash routing for desktop
+			window.location.hash = to
+		} else {
+			// push to history state and dispatch event
+			window.history.pushState(state, null, to)
+			window.dispatchEvent(new Event("popstate"))
+		}
 	},
 	back: () => {
 		window.history.back()
@@ -30,7 +35,15 @@ export const Render = (props = {}) => {
 	)
 
 	const onHistoryChange = React.useCallback(() => {
-		app.eventBus.emit("router.navigate", window.location.pathname)
+		if (app.isDesktop) {
+			// Use hash routing for desktop
+			app.eventBus.emit(
+				"router.navigate",
+				window.location.hash.replace("#", ""),
+			)
+		} else {
+			app.eventBus.emit("router.navigate", window.location.pathname)
+		}
 	}, [])
 
 	React.useEffect(() => {
