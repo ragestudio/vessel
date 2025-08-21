@@ -13,6 +13,7 @@ import ExtensionManager from "./classes/ExtensionsManager"
 import EventBus from "./classes/EventBus"
 import InternalConsole from "./classes/InternalConsole"
 import SplashScreenManager from "./classes/SplashScreenManager"
+import Location from "./classes/Location"
 
 import bindObjects from "./utils/bindObjects"
 import isMobile from "./utils/isMobile"
@@ -25,6 +26,11 @@ export default class Runtime {
 	constructor(baseAppClass, params = { renderMount: "root" }) {
 		this.baseAppClass = baseAppClass
 		this.params = params
+
+		// create fake process obj
+		window.process = {
+			env: {},
+		}
 
 		this.initialize().catch((error) => {
 			this.eventBus.emit("runtime.initialize.crash", error)
@@ -114,18 +120,13 @@ export default class Runtime {
 			document.getElementById(this.params.renderMount ?? "root"),
 		)
 
+		this.registerPublicField("cores", this.cores.getContext())
+		this.registerPublicField("extensions", this.extensions)
+		this.registerPublicField("location", Location)
 		this.registerPublicField("eventBus", this.eventBus)
 		this.registerPublicField("isMobile", isMobile())
 		this.registerPublicField("isDesktop", isDesktop())
 		this.registerPublicField("__version", pkgJson.version)
-
-		// create fake process
-		window.process = {
-			env: {},
-		}
-
-		window.app.cores = this.cores.getContext()
-		window.app.extensions = this.extensions
 
 		this.registerEventsToBus(this.internalEvents)
 
