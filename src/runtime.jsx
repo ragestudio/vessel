@@ -69,17 +69,22 @@ export default class Runtime {
 		},
 		"runtime.initialize.finish": () => {
 			const time = performance.now()
+
 			this.states.INITIALIZATION_STOP = time
+
 			if (this.states.INITIALIZATION_START) {
 				this.states.INITIALIZATION_TOOKS =
 					time - this.states.INITIALIZATION_START
 			}
+
 			this.states.LOAD_STATE = "initialized"
 		},
 		"runtime.initialize.crash": (error) => {
 			this.states.LOAD_STATE = "crashed"
+
 			this.splash.detach()
 			this.console.error("Runtime crashed on initialization\n", error)
+
 			this.render(
 				this.baseAppClass.staticRenders?.Crash ?? StaticRenders.Crash,
 				{
@@ -92,7 +97,9 @@ export default class Runtime {
 		},
 		"runtime.crash": (crash) => {
 			this.states.LOAD_STATE = "crashed"
+
 			this.splash.detach()
+
 			this.render(
 				this.baseAppClass.staticRenders?.Crash ?? StaticRenders.Crash,
 				{ crash },
@@ -145,7 +152,6 @@ export default class Runtime {
 		}
 
 		await this.cores.initialize()
-		await this.performInitializerTasks()
 
 		if (typeof this.baseAppClass.initialize === "function") {
 			await this.baseAppClass.initialize.call(this)
@@ -173,20 +179,28 @@ export default class Runtime {
 		}
 
 		this.eventBus.emit("runtime.initialize.finish")
-		this.render(this.baseAppClass)
+		this.console.timeEnd("runtime:initialize")
 
-		// initialize extension manager
-		this.extensions.initialize()
+		this.render(this.baseAppClass)
 
 		if (!this.baseAppClass.splashAwaitEvent) {
 			this.splash.detach()
 		}
 
-		this.console.timeEnd("runtime:initialize")
+		// initialize extension manager
+		this.extensions.initialize()
+
+		// do pending initializer tasks
+		this.console.time("runtime:performInitializerTasks")
+		await this.performInitializerTasks()
+		this.console.timeEnd("runtime:performInitializerTasks")
 	}
 
-	appendToInitializer(task) {
-		let tasks = Array.isArray(task) ? task : [task]
+	appendToInitializer(tasks) {
+		if (!Array.isArray(tasks)) {
+			tasks = [tasks]
+		}
+
 		tasks.forEach((_task) => {
 			if (typeof _task === "function") {
 				this.states.INITIALIZER_TASKS.push(_task)
