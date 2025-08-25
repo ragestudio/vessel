@@ -14,37 +14,20 @@ export default class CoresManager {
 
 		try {
 			this.runtime.console.time("runtime:initialize:cores:importpaths")
-			const coresPaths = {
-				...import.meta.glob("/src/cores/*/*.core.jsx"),
-				...import.meta.glob("/src/cores/*/*.core.js"),
-				...import.meta.glob("/src/cores/*/*.core.ts"),
-				...import.meta.glob("/src/cores/*/*.core.tsx"),
-			}
+			const coresPaths = import.meta.glob(
+				[
+					"/src/cores/*/*.core.jsx",
+					"/src/cores/*/*.core.js",
+					"/src/cores/*/*.core.ts",
+					"/src/cores/*/*.core.tsx",
+				],
+				{ eager: true },
+			)
 			this.runtime.console.timeEnd("runtime:initialize:cores:importpaths")
 
-			const coresKeys = Object.keys(coresPaths)
-
-			if (coresKeys.length === 0) {
-				this.runtime.console.warn(
-					"Cannot find any cores to initialize.",
-				)
-				return true
-			}
-
-			this.runtime.console.time("runtime:initialize:cores:import")
-			let cores = await Promise.all(
-				coresKeys.map(async (key) => {
-					const coreModule = await coresPaths[key]().catch((err) => {
-						this.runtime.console.warn(
-							`Cannot load core [${key}]`,
-							err,
-						)
-						return false
-					})
-					return coreModule?.default ?? coreModule
-				}),
-			)
-			this.runtime.console.timeEnd("runtime:initialize:cores:import")
+			let cores = Object.values(coresPaths).map((mod) => {
+				return mod.default
+			})
 
 			this.runtime.console.time("runtime:initialize:cores:filters")
 			// filter by valid cores
@@ -58,7 +41,9 @@ export default class CoresManager {
 			this.runtime.console.timeEnd("runtime:initialize:cores:filters")
 
 			if (!cores.length) {
-				this.console.warn(`Cannot find any valid cores to initialize.`)
+				this.runtime.console.warn(
+					`Cannot find any valid cores to initialize.`,
+				)
 				return true
 			}
 
