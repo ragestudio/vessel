@@ -20,6 +20,10 @@ export function buildRouter({
 
 	// wrap routes
 	routes = routes.map((route) => {
+		if (route.declaration.wildcard === true) {
+			route.path = `${route.path}*`
+		}
+
 		return {
 			path: route.path,
 			ErrorBoundary: staticRenders.RenderError,

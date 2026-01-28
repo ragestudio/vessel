@@ -6,7 +6,7 @@ class ExtensionsDB {
 	db = null
 
 	async initialize() {
-		this.db = await localforage.createInstance({
+		this.db = localforage.createInstance({
 			name: ExtensionsDB.dbName,
 			storeName: ExtensionsDB.dbName,
 			driver: localforage.INDEXEDDB,
