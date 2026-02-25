@@ -21,3 +21,4 @@
 # Temporal configurations
 /**/**/.aliaser
 .experimental
+.npmrc
