@@ -11,7 +11,12 @@ function buildAppRender(renderURL, props) {
 
 		RenderModule = RenderModule.default
 
-		return () => <RenderModule {..._props} {...props} />
+		return () => (
+			<RenderModule
+				{..._props}
+				{...props}
+			/>
+		)
 	})
 }
 
@@ -50,6 +55,12 @@ export default class Extension {
 	async _init() {
 		if (typeof this.onInitialize === "function") {
 			this.onInitialize()
+		}
+
+		if (typeof this.ipc === "object") {
+			for (const [event, handler] of Object.entries(this.ipc)) {
+				window.ipcRenderer.on(event, handler)
+			}
 		}
 
 		if (typeof this.public === "object") {
