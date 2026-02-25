@@ -19,13 +19,17 @@ export default class ExtensionManager {
 
 	context = Object()
 
-	load = async (id) => {
+	loadById = async (id) => {
 		let manifest = await this.db.manifest.get(id)
 
 		if (!manifest) {
 			throw new Error(`Extension ${id} not found`)
 		}
 
+		return this.load(manifest)
+	}
+
+	load = async (manifest) => {
 		app.eventBus.emit("extension:loading", manifest)
 		this.logger.log(`Loading extension`, manifest)
 
@@ -33,18 +37,25 @@ export default class ExtensionManager {
 			throw new Error("Extension manifest is missing main file")
 		}
 
-		const startLoadAt = performance.now()
+		// check if is already loaded
+		if (this.extensions.has(manifest.id)) {
+			this.logger.warn(
+				`Extension [${manifest.id}] is already loaded, unloading...`,
+			)
+			await this.unload(manifest.id)
+		}
 
 		let main = null
+		const startLoadAt = performance.now()
+		const importUrl =
+			(manifest.remoteMain ?? manifest.main) + "?t=" + Date.now()
 
-		if (manifest.enabled == true) {
-			// load main file
+		if (manifest.enabled === true) {
 			let mainClass = await import(
 				/* @vite-ignore */
-				manifest.main
+				importUrl
 			)
 
-			// inject dependencies
 			mainClass = mainClass.default
 
 			// initializate
@@ -63,6 +74,7 @@ export default class ExtensionManager {
 			worker: null,
 			loadDuration: loadDuration,
 			enabled: manifest.enabled,
+			runtimed: manifest.runtimed,
 		})
 
 		app.eventBus.emit("extension:loaded", manifest)
@@ -76,15 +88,25 @@ export default class ExtensionManager {
 			throw new Error(`Extension ${id} not found`)
 		}
 
-		await extension.main._unload()
+		try {
+			await extension.main._unload()
 
-		//this.extensions.delete(id)
-
-		app.eventBus.emit("extension:unloaded", extension.manifest)
-		this.logger.log(`Extension unloaded`, extension.manifest)
+			app.eventBus.emit("extension:unloaded", extension.manifest)
+			this.logger.log(`Extension unloaded`, extension.manifest)
+		} catch {
+			this.logger.error(`Error unloading extension`, extension.manifest)
+			return null
+		}
 	}
 
 	install = async (manifestUrl) => {
+		if (app.isDesktop) {
+			return await window.ipcRenderer.invoke(
+				"extensions:install",
+				manifestUrl,
+			)
+		}
+
 		let manifest = null
 
 		if (isUrl(manifestUrl)) {
@@ -106,7 +128,7 @@ export default class ExtensionManager {
 		manifest.installed_at = Date.now()
 
 		await this.db.manifest.put(manifest)
-		await this.load(manifest.id)
+		await this.loadById(manifest.id)
 
 		app.eventBus.emit("extension:installed", manifest)
 		this.logger.log(`Extension installed`, manifest)
@@ -163,6 +185,30 @@ export default class ExtensionManager {
 	}
 
 	async initialize() {
+		if (app.isDesktop) {
+			if (window.ipcRenderer.on) {
+				window.ipcRenderer.on("extensions:load", (event, manifest) => {
+					this.logger.log(
+						"Load extension received from IPC:",
+						manifest,
+					)
+					this.load(manifest)
+				})
+			}
+
+			let manifests = await fetch(
+				"http://localhost:11150/extensions/list",
+			)
+
+			if (manifests.ok) {
+				manifests = await manifests.json()
+
+				for (let manfiest of manifests) {
+					this.load(manfiest)
+				}
+			}
+		}
+
 		await this.db.initialize()
 
 		// load all extensions
@@ -170,7 +216,14 @@ export default class ExtensionManager {
 		let extensions = await this.db.manifest.getAll()
 
 		for (let extension of extensions) {
-			await this.load(extension.id)
+			try {
+				await this.load(extension)
+			} catch (error) {
+				this.logger.error(
+					`Error loading extension ${extension.id}:`,
+					error,
+				)
+			}
 		}
 	}
 
