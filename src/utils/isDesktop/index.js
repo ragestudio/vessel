@@ -1,3 +1,3 @@
 export default () => {
-	return !!(window.__TAURI__ ?? window.__ELECTRON__)
+	return !!window.__ELECTRON__
 }
