@@ -20,8 +20,4 @@ export default class EventBus extends EventEmitter {
 	off = (event, listener) => {
 		return this.removeListener(event, listener)
 	}
-
-	once = (event, listener, context) => {
-		return this.once(event, listener, context)
-	}
 }
