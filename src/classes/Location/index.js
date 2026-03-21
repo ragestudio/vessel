@@ -6,6 +6,7 @@ export default class Location {
 		if (app.isDesktop === true) {
 			// Use hash routing for desktop
 			window.location.hash = to
+			window.dispatchEvent(new Event("popstate"))
 		} else {
 			// push to history state and dispatch event
 			window.history.pushState(state, null, to)
