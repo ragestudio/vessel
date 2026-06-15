@@ -48,6 +48,11 @@ export function buildRouter({
 		}
 	})
 
+	routes.push({
+		path: "*",
+		element: React.createElement(staticRenders.NotFound),
+	})
+
 	// create & return router
 	if (isDesktop()) {
 		return createHashRouter(routes)
