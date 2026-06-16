@@ -2,27 +2,41 @@
  * Get page paths with mobile support
  */
 export const getPagePaths = () => {
-	let paths = {
+	const allPaths = {
 		...import.meta.glob("/src/pages/**/[a-z[]*.jsx"),
 		...import.meta.glob("/src/pages/**/[a-z[]*.tsx"),
 	}
 
-	if (app.isMobile) {
-		const mobilePaths = {
-			...import.meta.glob("/src/pages/**/[a-z[]*.mobile.jsx"),
-			...import.meta.glob("/src/pages/**/[a-z[]*.mobile.tsx"),
-		}
+	let paths = {}
 
-		paths = { ...paths, ...mobilePaths }
+	if (app.isMobile) {
+		const mobilePaths = {}
+		const desktopPaths = {}
+
+		Object.keys(allPaths).forEach((path) => {
+			if (path.includes(".mobile.")) {
+				mobilePaths[path] = allPaths[path]
+			} else {
+				desktopPaths[path] = allPaths[path]
+			}
+		})
+
+		paths = { ...desktopPaths, ...mobilePaths }
 
 		// Replace non-mobile routes with mobile routes when available
-		Object.keys(paths).forEach((path) => {
+		Object.keys(desktopPaths).forEach((path) => {
 			const mobilePath = path
 				.replace(/\.jsx$/, ".mobile.jsx")
 				.replace(/\.tsx$/, ".mobile.tsx")
 
 			if (mobilePaths[mobilePath]) {
 				delete paths[path]
+			}
+		})
+	} else {
+		Object.keys(allPaths).forEach((path) => {
+			if (!path.includes(".mobile.")) {
+				paths[path] = allPaths[path]
 			}
 		})
 	}
