@@ -1,4 +1,9 @@
-import { createBrowserRouter, createHashRouter } from "react-router"
+import React from "react"
+import {
+	createBrowserRouter,
+	createHashRouter,
+	useRouteError,
+} from "react-router"
 import isDesktop from "../../utils/isDesktop"
 
 import PageWrapper from "../components/PageWrapper"
@@ -25,9 +30,14 @@ export function buildRouter({
 			route.path = `${route.path}*`
 		}
 
+		const RouteErrorBoundary = () =>
+			React.createElement(staticRenders.RenderError, {
+				error: useRouteError(),
+			})
+
 		return {
 			path: route.path,
-			ErrorBoundary: staticRenders.RenderError,
+			ErrorBoundary: RouteErrorBoundary,
 			lazy: async () => {
 				const mod = await route.import()
 
