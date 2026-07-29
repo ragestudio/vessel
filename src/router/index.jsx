@@ -1,5 +1,6 @@
 import React from "react"
 import { RouterProvider } from "react-router"
+import PropTypes from "prop-types"
 
 import buildRouter from "./utils/buildRouter"
 import { generateRoutes } from "./utils/routeUtils"
@@ -7,7 +8,7 @@ import { generateRoutes } from "./utils/routeUtils"
 export const Render = (props = {}) => {
 	const router = React.useRef(
 		buildRouter({
-			routes: generateRoutes(props.routes),
+			routes: generateRoutes(),
 			declarations: props.declarations,
 			staticRenders: props.staticRenders,
 			onPageMount: props.onPageMount,
@@ -40,4 +41,20 @@ export const Render = (props = {}) => {
 	}, [])
 
 	return <RouterProvider router={router.current} />
+}
+
+Render.propTypes = {
+	routes: PropTypes.arrayOf(PropTypes.object),
+	declarations: PropTypes.arrayOf(PropTypes.object),
+	staticRenders: PropTypes.objectOf(PropTypes.object),
+	onPageMount: PropTypes.func,
+	onPageUnmount: PropTypes.func,
+}
+
+Render.defaultProps = {
+	routes: [],
+	declarations: [],
+	staticRenders: {},
+	onPageMount: undefined,
+	onPageUnmount: undefined,
 }
