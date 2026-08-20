@@ -32,7 +32,7 @@ export class ReactAdapter extends Adapter {
 	}
 
 	async finishInit() {
-		const renderer = React.createElement(this.runtime.baseAppClass, {
+		const renderer = React.createElement(this.runtime.baseAppClass as any, {
 			runtime: this.runtime,
 		})
 

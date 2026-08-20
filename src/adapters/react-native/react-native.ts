@@ -1,15 +1,15 @@
-import type { Adapter } from "../../adapter"
+import { Adapter } from "../../adapter"
 import type { Runtime } from "../../runtime"
 
 import React from "react"
 globalThis.React = React
 
-export class ReactAdapter implements Adapter {
-	constructor(runtime: Runtime) {
-		this.runtime = runtime
-	}
+declare const require: any
 
-	runtime: Runtime
+export class ReactAdapter extends Adapter {
+	constructor(runtime: Runtime) {
+		super(runtime)
+	}
 
 	splash = {
 		attach: () => {},
@@ -23,6 +23,6 @@ export class ReactAdapter implements Adapter {
 			/\.core\.(js|jsx|ts|tsx)$/,
 		)
 
-		return coresContext.keys().map((key) => coresContext(key).default)
+		return coresContext.keys().map((key: string) => coresContext(key).default)
 	}
 }

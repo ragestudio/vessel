@@ -1,6 +1,6 @@
 import InternalConsole from "./classes/InternalConsole"
-import { isUrl, replaceRelativeImportWithUrl } from "./utils/url"
 import ExtensionsDB from "./extensions_db"
+import { isUrl, replaceRelativeImportWithUrl } from "./utils/url"
 import { Runtime } from "./runtime"
 
 export default class ExtensionManager {
@@ -103,7 +103,7 @@ export default class ExtensionManager {
 
 	install = async (manifestUrl) => {
 		if (app.isDesktop) {
-			return await window.ipcRenderer.invoke(
+			return await globalThis.ipcRenderer.invoke(
 				"extensions:install",
 				manifestUrl,
 			)
@@ -188,14 +188,17 @@ export default class ExtensionManager {
 
 	async initialize() {
 		if (app.isDesktop) {
-			if (window.ipcRenderer.on) {
-				window.ipcRenderer.on("extensions:load", (event, manifest) => {
-					this.logger.log(
-						"Load extension received from IPC:",
-						manifest,
-					)
-					this.load(manifest)
-				})
+			if (globalThis.ipcRenderer.on) {
+				globalThis.ipcRenderer.on(
+					"extensions:load",
+					(event, manifest) => {
+						this.logger.log(
+							"Load extension received from IPC:",
+							manifest,
+						)
+						this.load(manifest)
+					},
+				)
 			}
 
 			let manifests = await fetch(
@@ -205,7 +208,7 @@ export default class ExtensionManager {
 			if (manifests.ok) {
 				manifests = await manifests.json()
 
-				for (let manfiest of manifests) {
+				for (let manfiest of manifests as unknown as any[]) {
 					this.load(manfiest)
 				}
 			}

@@ -1,3 +1,3 @@
 export default () => {
-	return !!window.__ELECTRON__
+	return !!globalThis.__ELECTRON__
 }

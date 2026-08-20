@@ -3,7 +3,7 @@ import localforage from "localforage"
 class ExtensionsDB {
 	static dbName = "extensions"
 
-	db: LocalForageInstance = null
+	db: LocalForage = null
 
 	async initialize() {
 		this.db = localforage.createInstance({
