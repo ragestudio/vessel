@@ -1,6 +1,6 @@
 {
 	"name": "@ragestudio/vessel",
-	"version": "0.27.0",
+	"version": "0.27.1",
 	"main": "./dist/index.js",
 	"repository": "https://github.com/ragestudio/vessel.git",
 	"author": "RageStudio",
