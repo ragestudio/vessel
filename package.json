@@ -2,6 +2,7 @@
 	"name": "@ragestudio/vessel",
 	"version": "0.27.1",
 	"main": "./dist/index.js",
+	"types": "./dist/globals.d.ts",
 	"repository": "https://github.com/ragestudio/vessel.git",
 	"author": "RageStudio",
 	"license": "MIT",
