@@ -16,16 +16,17 @@
 	"scripts": {
 		"build": "tsgo"
 	},
+	"peerDependencies": {
+		"react": "^19.2.7",
+		"react-dom": "^19.2.7",
+		"react-router": "^7.18.0"
+	},
 	"dependencies": {
 		"@gullerya/object-observer": "^7.0.0",
 		"@loadable/component": "^5.16.7",
 		"comlink": "^4.4.2",
-		"less": "^4.6.6",
 		"localforage": "^1.10.0",
-		"prop-types": "^15.8.1",
-		"react": "^19.2.7",
-		"react-dom": "^19.2.7",
-		"react-router": "^7.18.0"
+		"prop-types": "^15.8.1"
 	},
 	"devDependencies": {
 		"@types/react": "^19.2.18",
