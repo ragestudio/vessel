@@ -1,8 +1,8 @@
 {
 	"name": "@ragestudio/vessel",
-	"version": "0.27.1",
+	"version": "0.28.0",
 	"main": "./dist/index.js",
-	"types": "./dist/globals.d.ts",
+	"types": "./dist/index.d.ts",
 	"repository": "https://github.com/ragestudio/vessel.git",
 	"author": "RageStudio",
 	"license": "MIT",
@@ -14,7 +14,7 @@
 		"access": "public"
 	},
 	"scripts": {
-		"build": "tsgo"
+		"build": "tsc"
 	},
 	"peerDependencies": {
 		"react": "^19.2.7",
@@ -30,7 +30,11 @@
 	},
 	"devDependencies": {
 		"@types/react": "^19.2.18",
-		"@typescript/native-preview": "7.0.0-dev.20260707.2",
-		"vite": "^8.0.16"
+		"typescript": "^7.0.2",
+		"vite": "^8.2.2"
+	},
+	"exports": {
+		"./*": "./dist/*.js",
+		"./**": "./dist/**/*"
 	}
 }
