@@ -1,4 +1,5 @@
 import type { Adapter } from "./adapter"
+import type { VesselApp } from "./types"
 
 import CoresManager from "./cores"
 import ExtensionManager from "./extensions"
@@ -12,14 +13,7 @@ import isDesktop from "./utils/isDesktop"
 
 import pkgJson from "../package.json"
 
-export interface VesselApp {
-	events?: Record<string, (...args: any[]) => void>
-	splashAwaitEvent?: string
-	initialize?: () => Promise<void>
-	publicEvents?: Record<string, any>
-	publicMethods?: Record<string, any>
-	render?: (children: any) => any
-}
+export * from "./types"
 
 export class Runtime {
 	constructor(baseAppClass?: VesselApp, adapter?: typeof Adapter) {
@@ -177,6 +171,20 @@ export class Runtime {
 		}
 
 		return this.publicContext[key]
+	}
+}
+
+declare global {
+	var app: {
+		cores: Record<string, any>
+		extensions: ExtensionManager
+		eventBus: EventBus
+
+		isMobile: boolean
+		isDesktop: boolean
+		__version: string
+
+		[key: string]: any
 	}
 }
 

@@ -2,11 +2,7 @@ import { Runtime } from "./runtime"
 import Core from "./core"
 import EventBus from "./classes/EventBus"
 
-export type { VesselApp } from "./runtime"
+export type * from "./runtime"
+export type * from "./types"
 
-export {
-	Runtime,
-	Core,
-	//Extension,
-	EventBus,
-}
+export { Runtime, Core, EventBus }
