@@ -10,7 +10,7 @@ const PageWrapper = ({
 	declaration,
 	loadFallback,
 	onMount,
-	onUnmount = () => true,
+	onUnmount,
 	...props
 }) => {
 	const navigation = useNavigation()
