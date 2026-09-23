@@ -1,3 +1,6 @@
+import type { StaticRenders, VesselRoute } from "../../types"
+import type { RouteObject } from "react-router"
+
 import React from "react"
 import {
 	createBrowserRouter,
@@ -9,13 +12,21 @@ import isDesktop from "../../utils/isDesktop"
 import PageWrapper from "../components/PageWrapper"
 import { findRouteDeclaration } from "./routeUtils"
 
+export interface RouterOptions {
+	routes: Partial<VesselRoute>[]
+	declarations: any[]
+	staticRenders?: StaticRenders
+	onPageMount?: Function
+	onPageUnmount?: Function
+}
+
 export function buildRouter({
 	routes,
 	declarations,
 	staticRenders = {},
 	onPageMount,
 	onPageUnmount,
-}) {
+}: RouterOptions) {
 	// find declarations
 	routes = routes.map((route) => {
 		return {
@@ -30,14 +41,13 @@ export function buildRouter({
 			route.path = `${route.path}*`
 		}
 
-		const RouteErrorBoundary = () =>
-			React.createElement(staticRenders.RenderError, {
-				error: useRouteError(),
-			})
-
 		return {
 			path: route.path,
-			ErrorBoundary: RouteErrorBoundary,
+			ErrorBoundary: () =>
+				React.createElement(staticRenders.RenderError, {
+					// @ts-ignore
+					error: useRouteError(),
+				}),
 			lazy: async () => {
 				const mod = await route.import()
 
@@ -65,10 +75,10 @@ export function buildRouter({
 
 	// create & return router
 	if (isDesktop()) {
-		return createHashRouter(routes)
+		return createHashRouter(routes as RouteObject[])
 	}
 
-	return createBrowserRouter(routes)
+	return createBrowserRouter(routes as RouteObject[])
 }
 
 export default buildRouter
