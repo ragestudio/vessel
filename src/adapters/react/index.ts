@@ -1,7 +1,7 @@
 import { Adapter } from "../../adapter"
-import type { Runtime } from "../../runtime"
-
 import React from "react"
+
+// @ts-ignore
 globalThis.React = React
 
 import ReactDomClient from "react-dom/client"

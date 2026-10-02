@@ -1,9 +1,9 @@
 import InternalConsole from "./classes/InternalConsole"
 import ExtensionsDB from "./extensions_db"
 import { isUrl, replaceRelativeImportWithUrl } from "./utils/url"
-import { Runtime } from "./runtime"
+import { ExtensionManifest, Runtime } from "./runtime"
 
-export default class ExtensionManager {
+export class ExtensionManager {
 	constructor(runtime: Runtime) {
 		this.runtime = runtime
 	}
@@ -31,7 +31,7 @@ export default class ExtensionManager {
 		return this.load(manifest)
 	}
 
-	load = async (manifest) => {
+	load = async (manifest: ExtensionManifest) => {
 		app.eventBus.emit("extension:loading", manifest)
 		this.logger.log(`Loading extension`, manifest)
 
@@ -53,6 +53,7 @@ export default class ExtensionManager {
 			(manifest.remoteMain ?? manifest.main) + "?t=" + Date.now()
 
 		if (manifest.enabled === true) {
+			// @ts-ignore
 			let mainClass = await import(
 				/* @vite-ignore */
 				importUrl
@@ -61,7 +62,7 @@ export default class ExtensionManager {
 			mainClass = mainClass.default
 
 			// initializate
-			main = new mainClass(this.runtime, this, manifest)
+			main = new mainClass(this.runtime, manifest)
 
 			await main._init()
 		}
@@ -101,7 +102,7 @@ export default class ExtensionManager {
 		}
 	}
 
-	install = async (manifestUrl) => {
+	install = async (manifestUrl: string) => {
 		if (app.isDesktop) {
 			return await globalThis.ipcRenderer.invoke(
 				"extensions:install",
@@ -136,7 +137,7 @@ export default class ExtensionManager {
 		this.logger.log(`Extension installed`, manifest)
 	}
 
-	uninstall = async (id) => {
+	uninstall = async (id: string) => {
 		let extension = this.extensions.get(id)
 
 		if (!extension) {
@@ -238,3 +239,5 @@ export default class ExtensionManager {
 		return !!manifest
 	}
 }
+
+export default ExtensionManager

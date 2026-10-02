@@ -1,9 +1,6 @@
 import { Adapter } from "../../adapter"
 import type { Runtime } from "../../runtime"
 
-import React from "react"
-globalThis.React = React
-
 declare const require: any
 
 export class ReactAdapter extends Adapter {
@@ -23,6 +20,8 @@ export class ReactAdapter extends Adapter {
 			/\.core\.(js|jsx|ts|tsx)$/,
 		)
 
-		return coresContext.keys().map((key: string) => coresContext(key).default)
+		return coresContext
+			.keys()
+			.map((key: string) => coresContext(key).default)
 	}
 }

@@ -24,3 +24,15 @@ export interface StaticRenders {
 	NotFound?: React.ComponentType
 	RenderError?: React.ComponentType
 }
+
+export type ExtensionManifest = {
+	id: string
+	main: string
+	runtimed?: boolean
+
+	url?: string
+	remoteMain?: string
+
+	// Runtimed expecific values
+	enabled?: boolean
+}
