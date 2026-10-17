@@ -1,7 +1,17 @@
 import InternalConsole from "./classes/InternalConsole"
 import ExtensionsDB from "./extensions_db"
 import { isUrl, replaceRelativeImportWithUrl } from "./utils/url"
-import { ExtensionManifest, Runtime } from "./runtime"
+import type { ExtensionManifest, Runtime } from "./runtime"
+
+type ExtensionEntry = {
+	id: string
+	manifest: ExtensionManifest
+	main: any
+	worker: any
+	loadDuration: number
+	enabled?: boolean | undefined
+	runtimed?: boolean | undefined
+}
 
 export class ExtensionManager {
 	constructor(runtime: Runtime) {
@@ -15,11 +25,11 @@ export class ExtensionManager {
 		bgColor: "bgMagenta",
 	})
 
-	extensions = new Map()
+	extensions = new Map<string, ExtensionEntry>()
 
 	db = new ExtensionsDB()
 
-	context = Object()
+	context: Record<string, any> = {}
 
 	loadById = async (id: string) => {
 		let manifest = await this.db.manifest.get(id)
@@ -47,7 +57,7 @@ export class ExtensionManager {
 			await this.unload(manifest.id)
 		}
 
-		let main = null
+		let main: any = null
 		const startLoadAt = performance.now()
 		const importUrl =
 			(manifest.remoteMain ?? manifest.main) + "?t=" + Date.now()
@@ -84,7 +94,7 @@ export class ExtensionManager {
 		this.logger.log(`Extension loaded`, manifest)
 	}
 
-	unload = async (id) => {
+	unload = async (id: string) => {
 		let extension = this.extensions.get(id)
 
 		if (!extension) {
@@ -110,11 +120,11 @@ export class ExtensionManager {
 			)
 		}
 
-		let manifest = null
+		let manifest: any = null
 
 		if (isUrl(manifestUrl)) {
-			manifest = await fetch(manifestUrl)
-			manifest = await manifest.json()
+			const response = await fetch(manifestUrl)
+			manifest = await response.json()
 		}
 
 		app.eventBus.emit("extension:installing", manifest)
@@ -155,15 +165,15 @@ export class ExtensionManager {
 		this.logger.log(`Extension uninstalled`, extension.manifest)
 	}
 
-	registerContext(id, value) {
+	registerContext(id: string, value: any) {
 		return (this.context[id] = value)
 	}
 
-	unregisterContext(id) {
+	unregisterContext(id: string) {
 		delete this.context[id]
 	}
 
-	toggleExtension = async (id, to) => {
+	toggleExtension = async (id: string, to?: boolean) => {
 		let extension = this.extensions.get(id)
 
 		if (!extension) {
@@ -181,7 +191,7 @@ export class ExtensionManager {
 		this.extensions.set(id, extension)
 
 		if (extension.manifest.enabled) {
-			await this.load(extension.manifest.id)
+			await this.load(extension.manifest)
 		} else {
 			await this.unload(extension.manifest.id)
 		}
@@ -192,7 +202,7 @@ export class ExtensionManager {
 			if (globalThis.ipcRenderer.on) {
 				globalThis.ipcRenderer.on(
 					"extensions:load",
-					(event, manifest) => {
+					(_event: any, manifest: ExtensionManifest) => {
 						this.logger.log(
 							"Load extension received from IPC:",
 							manifest,
@@ -202,15 +212,16 @@ export class ExtensionManager {
 				)
 			}
 
-			let manifests = await fetch(
+			const response = await fetch(
 				"http://localhost:11150/extensions/list",
 			)
 
-			if (manifests.ok) {
-				manifests = await manifests.json()
+			if (response.ok) {
+				const manifests =
+					(await response.json()) as unknown as ExtensionManifest[]
 
-				for (let manfiest of manifests as unknown as any[]) {
-					this.load(manfiest)
+				for (let manifest of manifests) {
+					this.load(manifest)
 				}
 			}
 		}
@@ -219,7 +230,8 @@ export class ExtensionManager {
 
 		// load all extensions
 		// TODO: load this to late app initializer to avoid waiting for extensions to load the app
-		let extensions = await this.db.manifest.getAll()
+		let extensions =
+			(await this.db.manifest.getAll()) as ExtensionManifest[]
 
 		for (let extension of extensions) {
 			try {
@@ -233,7 +245,7 @@ export class ExtensionManager {
 		}
 	}
 
-	isInstalled = async (id) => {
+	isInstalled = async (id: string) => {
 		const manifest = await this.db.manifest.get(id)
 
 		return !!manifest

@@ -9,7 +9,7 @@ export default class Location {
 			window.dispatchEvent(new Event("popstate"))
 		} else {
 			// push to history state and dispatch event
-			window.history.pushState(state, null, to)
+			window.history.pushState(state, "", to)
 			window.dispatchEvent(new Event("popstate"))
 		}
 	}

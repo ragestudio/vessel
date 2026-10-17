@@ -14,7 +14,8 @@ export class CoresManager extends Map {
 	async scanCores(): Promise<(typeof Core)[]> {
 		let cores = await this.runtime.adapter.scanCores()
 
-		cores = cores.filter((mod) => !(cores instanceof Core))
+		// keep only valid core constructors
+		cores = cores.filter((core) => typeof core === "function")
 		cores = cores.filter((mod) => !mod.disabled)
 		cores = sortCoresByDependencies(cores)
 

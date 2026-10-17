@@ -1,8 +1,15 @@
 import React from "react"
-import propTypes from "prop-types"
-import { useNavigation } from "react-router"
+import { useLoaderData, useNavigation, useParams } from "react-router"
 
-import { useLoaderData, useParams } from "react-router"
+export type PageWrapperProps = {
+	path: string
+	element: React.ComponentType<any>
+	declaration: any
+	loadFallback?: React.ComponentType | undefined
+	onMount?: ((context: any) => void) | undefined
+	onUnmount?: (() => void) | undefined
+	[key: string]: any
+}
 
 const PageWrapper = ({
 	path,
@@ -12,7 +19,7 @@ const PageWrapper = ({
 	onMount,
 	onUnmount,
 	...props
-}) => {
+}: PageWrapperProps) => {
 	const navigation = useNavigation()
 	const loaderData = useLoaderData()
 	const params = useParams()
@@ -37,15 +44,6 @@ const PageWrapper = ({
 		params: params,
 		loaderData: loaderData,
 	})
-}
-
-PageWrapper.propTypes = {
-	path: propTypes.string.isRequired,
-	element: propTypes.func.isRequired,
-	declaration: propTypes.object.isRequired,
-	loadFallback: propTypes.func,
-	onMount: propTypes.func,
-	onUnmount: propTypes.func,
 }
 
 export default PageWrapper

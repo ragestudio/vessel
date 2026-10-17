@@ -116,7 +116,7 @@ export class Core {
 
 				return target[prop]
 			},
-			set: (target, prop, value) => {
+			set: (_target, _prop, _value) => {
 				throw new Error(
 					`Cannot set properties of a public interface of a core`,
 				)

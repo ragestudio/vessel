@@ -14,7 +14,7 @@ export default (cores: (typeof Core)[]) => {
 					return
 				}
 				if (depIndex !== 0) {
-					cores.unshift(cores.splice(depIndex, 1)[0])
+					cores.unshift(cores.splice(depIndex, 1)[0]!)
 				}
 			})
 		}

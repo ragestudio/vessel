@@ -14,10 +14,10 @@ import { Runtime } from "./runtime"
 
 export class Adapter {
 	constructor(runtime?: Runtime) {
-		this.runtime = runtime
+		if (runtime) this.runtime = runtime
 	}
 
-	runtime: Runtime
+	runtime!: Runtime
 
 	_connect_runtime(runtime: Runtime) {
 		this.runtime = runtime

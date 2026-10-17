@@ -42,7 +42,7 @@ export default class Extension {
 		this.runtime = runtime
 		this.manifest = manifest
 
-		this.originUrl = this.manifest.url.split("/").slice(0, -1).join("/")
+		this.originUrl = (this.manifest.url ?? "").split("/").slice(0, -1).join("/")
 
 		const ctor = this.constructor as typeof Extension
 
@@ -81,7 +81,7 @@ export default class Extension {
 			if (typeof this.app.render === "string") {
 				this.app.render = replaceRelativeImportWithUrl(
 					this.app.render,
-					this.manifest.url,
+					this.manifest.url ?? "",
 				)
 
 				this.app.renderComponent = buildAppRender(this.app.render, {

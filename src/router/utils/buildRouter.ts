@@ -14,41 +14,46 @@ import { findRouteDeclaration } from "./routeUtils"
 
 export interface RouterOptions {
 	routes: Partial<VesselRoute>[]
-	declarations: any[]
-	staticRenders?: StaticRenders
-	onPageMount?: Function
-	onPageUnmount?: Function
+	declarations?: any[] | undefined
+	staticRenders?: StaticRenders | undefined
+	onPageMount?: ((context: any) => void) | undefined
+	onPageUnmount?: (() => void) | undefined
 }
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const NullFallback = () => null
 
 export function buildRouter({
 	routes,
-	declarations,
+	declarations = [],
 	staticRenders = {},
 	onPageMount,
 	onPageUnmount,
 }: RouterOptions) {
 	// find declarations
-	routes = routes.map((route) => {
+	const withDeclarations = routes.map((route) => {
 		return {
 			...route,
-			declaration: findRouteDeclaration(route.path, declarations),
+			declaration: findRouteDeclaration(route.path ?? "", declarations),
 		}
 	})
 
 	// wrap routes
-	routes = routes.map((route) => {
-		if (route.declaration.wildcard === true) {
+	const wrapped: any[] = withDeclarations.map((route) => {
+		if (route.declaration?.wildcard === true) {
 			route.path = `${route.path}*`
 		}
 
 		return {
-			path: route.path,
+			path: route.path ?? "",
 			ErrorBoundary: () =>
-				React.createElement(staticRenders.RenderError, {
+				React.createElement(staticRenders.RenderError ?? NullFallback, {
 					// @ts-ignore
 					error: useRouteError(),
 				}),
 			lazy: async () => {
+				if (typeof route.import !== "function") return {}
+
 				const mod = await route.import()
 
 				return {
@@ -56,7 +61,7 @@ export function buildRouter({
 					shouldRevalidate: mod.default.shouldRevalidate,
 					Component: () =>
 						React.createElement(PageWrapper, {
-							path: route.path,
+							path: route.path ?? "",
 							element: mod.default,
 							declaration: route.declaration,
 							loadFallback: staticRenders.Loading,
@@ -68,17 +73,17 @@ export function buildRouter({
 		}
 	})
 
-	routes.push({
+	wrapped.push({
 		path: "*",
-		element: React.createElement(staticRenders.NotFound),
+		element: React.createElement(staticRenders.NotFound ?? NullFallback),
 	})
 
 	// create & return router
 	if (isDesktop()) {
-		return createHashRouter(routes as RouteObject[])
+		return createHashRouter(wrapped as RouteObject[])
 	}
 
-	return createBrowserRouter(routes as RouteObject[])
+	return createBrowserRouter(wrapped as RouteObject[])
 }
 
 export default buildRouter

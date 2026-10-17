@@ -9,7 +9,7 @@ import Location from "./location"
 
 export class ReactAdapter extends Adapter {
 	root: ReactDomClient.Root = ReactDomClient.createRoot(
-		document.getElementById("root"),
+		document.getElementById("root") as HTMLElement,
 	)
 
 	splashContainerId: string = "splash-screen"
@@ -18,12 +18,12 @@ export class ReactAdapter extends Adapter {
 		attach: () => {
 			const container = document.getElementById(this.splashContainerId)
 
-			container.style.setProperty("--visible", "1")
+			container?.style.setProperty("--visible", "1")
 		},
 		detach: () => {
 			const container = document.getElementById(this.splashContainerId)
 
-			container.style.setProperty("--visible", "0")
+			container?.style.setProperty("--visible", "0")
 		},
 	}
 

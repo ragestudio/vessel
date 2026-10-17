@@ -1,4 +1,9 @@
 import type { RouteObject } from "react-router"
+import type { Runtime } from "./runtime"
+
+export interface VesselAppProps {
+	runtime: Runtime
+}
 
 export interface VesselApp {
 	events?: Record<string, (...args: any[]) => void>

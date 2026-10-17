@@ -3,7 +3,7 @@ import localforage from "localforage"
 class ExtensionsDB {
 	static dbName = "extensions"
 
-	db: LocalForage = null
+	db!: LocalForage
 
 	async initialize() {
 		this.db = localforage.createInstance({
@@ -25,20 +25,24 @@ class ExtensionsDB {
 
 	manifest = {
 		put: async (manifest: any) => {
-			const manifests = await this.db.getItem("manifests")
+			const manifests: Record<string, any> =
+				(await this.db.getItem("manifests")) ?? {}
 			manifests[manifest.id] = manifest
 			await this.db.setItem("manifests", manifests)
 		},
 		get: async (id: string) => {
-			const manifests = await this.db.getItem("manifests")
+			const manifests: Record<string, any> =
+				(await this.db.getItem("manifests")) ?? {}
 			return manifests[id]
 		},
 		getAll: async () => {
-			const manifests = await this.db.getItem("manifests")
+			const manifests: Record<string, any> =
+				(await this.db.getItem("manifests")) ?? {}
 			return Object.values(manifests)
 		},
 		delete: async (id: string) => {
-			const manifests = await this.db.getItem("manifests")
+			const manifests: Record<string, any> =
+				(await this.db.getItem("manifests")) ?? {}
 			delete manifests[id]
 			await this.db.setItem("manifests", manifests)
 		},

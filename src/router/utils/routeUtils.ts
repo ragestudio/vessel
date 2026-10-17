@@ -1,23 +1,25 @@
+type RouteModule = () => Promise<any>
+
 /**
  * Get page paths with mobile support
  */
-export const getPagePaths = () => {
-	const allPaths = {
+export const getPagePaths = (): Record<string, RouteModule> => {
+	const allPaths: Record<string, RouteModule> = {
 		...import.meta.glob("/src/pages/**/[a-z[]*.jsx"),
 		...import.meta.glob("/src/pages/**/[a-z[]*.tsx"),
 	}
 
-	let paths = {}
+	let paths: Record<string, RouteModule> = {}
 
 	if (app.isMobile) {
-		const mobilePaths = {}
-		const desktopPaths = {}
+		const mobilePaths: Record<string, RouteModule> = {}
+		const desktopPaths: Record<string, RouteModule> = {}
 
 		Object.keys(allPaths).forEach((path) => {
 			if (path.includes(".mobile.")) {
-				mobilePaths[path] = allPaths[path]
+				mobilePaths[path] = allPaths[path]!
 			} else {
-				desktopPaths[path] = allPaths[path]
+				desktopPaths[path] = allPaths[path]!
 			}
 		})
 
@@ -36,7 +38,7 @@ export const getPagePaths = () => {
 	} else {
 		Object.keys(allPaths).forEach((path) => {
 			if (!path.includes(".mobile.")) {
-				paths[path] = allPaths[path]
+				paths[path] = allPaths[path]!
 			}
 		})
 	}
@@ -47,7 +49,7 @@ export const getPagePaths = () => {
 /**
  * Transform file path to route path
  */
-export const transformPathToRoute = (filePath) => {
+export const transformPathToRoute = (filePath: string) => {
 	let path = filePath
 		.replace(/\/src\/pages|index|\.jsx$/g, "")
 		.replace(/\/src\/pages|index|\.tsx$/g, "")
@@ -69,7 +71,7 @@ export const generateRoutes = () => {
 
 	const routes = Object.keys(paths).map((route) => ({
 		path: transformPathToRoute(route),
-		import: paths[route],
+		import: paths[route]!,
 		originalPath: route,
 	}))
 
@@ -79,14 +81,14 @@ export const generateRoutes = () => {
 /**
  * Create route pattern for matching
  */
-export const createRoutePattern = (routePath) => {
+export const createRoutePattern = (routePath: string) => {
 	return routePath.replace(/\*/g, ".*").replace(/!/g, "^")
 }
 
 /**
  * Test if route matches pattern
  */
-export const testRouteMatch = (pattern, route) => {
+export const testRouteMatch = (pattern: string, route: string) => {
 	const routePattern = createRoutePattern(pattern)
 
 	return new RegExp(routePattern).test(route)
@@ -96,7 +98,10 @@ export const testRouteMatch = (pattern, route) => {
  * Find route declaration
  */
 
-export const findRouteDeclaration = (path, declarations = []) => {
+export const findRouteDeclaration = (
+	path: string,
+	declarations: any[] = [],
+) => {
 	const foundDeclaration = declarations.find((layout) => {
 		return testRouteMatch(layout.path, path)
 	})

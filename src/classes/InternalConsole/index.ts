@@ -1,7 +1,7 @@
 export interface InternalConsoleParams {
 	namespace?: unknown
-	bgColor?: string
-	textColor?: string
+	bgColor?: string | undefined
+	textColor?: string | undefined
 }
 
 type ConsoleMethod = "log" | "info" | "warn" | "error" | "debug" | "trace"

@@ -66,7 +66,7 @@ export default class EventEmitter<
 		const result = new Array(length)
 
 		for (let index = 0; index < length; index++)
-			result[index] = listeners[index].fn
+			result[index] = listeners[index]!.fn
 
 		return result
 	}
@@ -124,7 +124,7 @@ export default class EventEmitter<
 		let length = listeners.length
 
 		for (let index = 0; index < length; index++) {
-			const { fn, context, once } = listeners[index]
+			const { fn, context, once } = listeners[index]!
 
 			if (once) {
 				listeners.splice(index--, 1)
@@ -263,7 +263,7 @@ export default class EventEmitter<
 		}
 
 		for (let index = listeners.length - 1; index >= 0; index--) {
-			if (listeners[index].fn === listener) listeners.splice(index, 1)
+			if (listeners[index]!.fn === listener) listeners.splice(index, 1)
 		}
 
 		if (listeners.length === 0) this.events[event] = undefined
