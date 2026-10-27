@@ -60,6 +60,14 @@ export const transformPathToRoute = (filePath: string) => {
 	path = path.replace(/\[([a-z]+)\]/g, ":$1")
 	path = path.replace(/\[\.{3}.+\]/, "*").replace(/\[(.+)\]/, ":$1")
 
+	// Clean double slashes
+	path = path.replace(/\/{2,}/g, "/")
+
+	// Remove trailing slash if longer than 1 character
+	if (path.length > 1 && path.endsWith("/")) {
+		path = path.slice(0, -1)
+	}
+
 	return path || "/"
 }
 
@@ -82,7 +90,16 @@ export const generateRoutes = () => {
  * Create route pattern for matching
  */
 export const createRoutePattern = (routePath: string) => {
-	return routePath.replace(/\*/g, ".*").replace(/!/g, "^")
+	if (routePath === "/") {
+		return "^/$"
+	}
+	return (
+		"^" +
+		routePath
+			.replace(/\/\*$/g, "(/.*)?")
+			.replace(/\*/g, ".*")
+			.replace(/!/g, "^")
+	)
 }
 
 /**

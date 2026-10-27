@@ -11,8 +11,10 @@ import isDesktop from "../../utils/isDesktop"
 
 import PageWrapper from "../components/PageWrapper"
 import { findRouteDeclaration } from "./routeUtils"
+import { RootRoute } from "../context"
 
 export interface RouterOptions {
+	baseElement?: any
 	routes: Partial<VesselRoute>[]
 	declarations?: any[] | undefined
 	staticRenders?: StaticRenders | undefined
@@ -40,12 +42,14 @@ export function buildRouter({
 
 	// wrap routes
 	const wrapped: any[] = withDeclarations.map((route) => {
-		if (route.declaration?.wildcard === true) {
-			route.path = `${route.path}*`
+		let routePath = route.path ?? ""
+
+		if (route.declaration?.wildcard === true && !routePath.endsWith("*")) {
+			routePath = routePath.endsWith("/") ? `${routePath}*` : `${routePath}/*`
 		}
 
 		return {
-			path: route.path ?? "",
+			path: routePath,
 			ErrorBoundary: () =>
 				React.createElement(staticRenders.RenderError ?? NullFallback, {
 					// @ts-ignore
@@ -57,8 +61,8 @@ export function buildRouter({
 				const mod = await route.import()
 
 				return {
-					loader: mod.default.loader,
-					shouldRevalidate: mod.default.shouldRevalidate,
+					loader: mod.default?.loader,
+					shouldRevalidate: mod.default?.shouldRevalidate,
 					Component: () =>
 						React.createElement(PageWrapper, {
 							path: route.path ?? "",
@@ -78,12 +82,20 @@ export function buildRouter({
 		element: React.createElement(staticRenders.NotFound ?? NullFallback),
 	})
 
+	const routesTree: RouteObject[] = [
+		{
+			path: "/",
+			Component: RootRoute,
+			children: wrapped,
+		},
+	]
+
 	// create & return router
 	if (isDesktop()) {
-		return createHashRouter(wrapped as RouteObject[])
+		return createHashRouter(routesTree)
 	}
 
-	return createBrowserRouter(wrapped as RouteObject[])
+	return createBrowserRouter(routesTree)
 }
 
 export default buildRouter

@@ -33,7 +33,7 @@ const PageWrapper = ({
 		}
 
 		return onUnmount
-	}, [])
+	}, [path, element, declaration])
 
 	if (navigation.state === "loading" && loadFallback) {
 		return React.createElement(loadFallback)
