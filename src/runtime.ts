@@ -2,7 +2,7 @@ import type { Adapter } from "./adapter"
 import type { VesselApp } from "./types"
 
 import CoresManager from "./cores"
-import ExtensionManager from "./extensions"
+import ExtensionsManager from "./extensions/manager"
 
 import EventBus from "./classes/EventBus"
 import InternalConsole from "./classes/InternalConsole"
@@ -35,7 +35,7 @@ export class Runtime {
 	adapter: Adapter
 
 	cores: CoresManager = new CoresManager(this)
-	extensions: ExtensionManager = new ExtensionManager(this)
+	extensions: ExtensionsManager = new ExtensionsManager(this)
 	eventBus: EventBus = new EventBus()
 	console: InternalConsole = new InternalConsole({
 		namespace: "runtime",
@@ -177,7 +177,7 @@ export class Runtime {
 declare global {
 	var app: {
 		cores: Record<string, any>
-		extensions: ExtensionManager
+		extensions: ExtensionsManager
 		eventBus: EventBus
 
 		isMobile: boolean

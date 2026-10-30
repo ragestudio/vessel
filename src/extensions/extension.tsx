@@ -1,10 +1,11 @@
-import type { ExtensionManifest, Runtime } from "./runtime"
+import type { Runtime } from "../runtime"
+import type { ExtensionManifest } from "./types"
 
-import InternalConsole from "./classes/InternalConsole"
-import EventBus from "./classes/EventBus"
+import InternalConsole from "../classes/InternalConsole"
+import EventBus from "../classes/EventBus"
 import loadable, { LoadableComponent } from "@loadable/component"
 
-import { replaceRelativeImportWithUrl } from "./utils/url"
+import { replaceRelativeImportWithUrl } from "../utils/url"
 import { ReactNode } from "react"
 
 function buildAppRender(renderURL: string, props: any) {

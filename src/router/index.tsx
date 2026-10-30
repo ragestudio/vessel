@@ -16,9 +16,14 @@ export type RenderProps = {
 	staticRenders?: StaticRenders
 	onPageMount?: (ctx: any) => void
 	onPageUnmount?: () => void
+	renderEnabled?: boolean
 }
 
-export const Router = (props: RenderProps = {}) => {
+export const Router = (
+	props: RenderProps = {
+		renderEnabled: true,
+	},
+) => {
 	const router = React.useRef(
 		buildRouter({
 			routes: props.routes ?? generateRoutes(),
@@ -34,7 +39,8 @@ export const Router = (props: RenderProps = {}) => {
 
 		// Emit initial navigation event
 		const initialPath = app.isDesktop
-			? router.current.state.location.pathname || window.location.hash.replace("#", "")
+			? router.current.state.location.pathname ||
+				window.location.hash.replace("#", "")
 			: router.current.state.location.pathname || window.location.pathname
 
 		app.eventBus.emit("router.navigate", initialPath)
@@ -70,7 +76,7 @@ export const Router = (props: RenderProps = {}) => {
 
 	return (
 		<RouterRootContext.Provider value={{ children: props.children }}>
-			<RouterProvider router={router.current} />
+			{props.renderEnabled && <RouterProvider router={router.current} />}
 		</RouterRootContext.Provider>
 	)
 }
@@ -78,4 +84,3 @@ export const Router = (props: RenderProps = {}) => {
 export const Render = Outlet
 
 export default Router
-
